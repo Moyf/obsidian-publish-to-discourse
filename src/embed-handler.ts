@@ -37,13 +37,19 @@ export class EmbedHandler {
     async processEmbeds(embedReferences: string[], activeFileName: string, useRemoteUrl = false): Promise<string[]> {
         const uploadedUrls: string[] = [];
         for (const ref of embedReferences) {
-            // 处理带有#的文件路径，分离文件名和标题部分
+            // 处理带有#或|的文件路径，分离文件名和参数部分
             let filePart = ref;
+            // 先处理#
             const hashIndex = filePart.indexOf("#");
             if (hashIndex >= 0) {
                 filePart = filePart.substring(0, hashIndex).trim();
             }
-            
+            // 再处理|，只取管道前的文件名
+            const pipeIndex = filePart.indexOf("|");
+            if (pipeIndex >= 0) {
+                filePart = filePart.substring(0, pipeIndex).trim();
+            }
+
             const filePath = this.app.metadataCache.getFirstLinkpathDest(filePart, activeFileName)?.path;
             if (filePath) {
                 const abstractFile = this.app.vault.getAbstractFileByPath(filePath);
